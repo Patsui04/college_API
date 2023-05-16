@@ -2,9 +2,16 @@
 const mysql = require("mysql2");
 const express = require("express");
 
+//Import the end points that would run the queries
+const updateCourseAvailibity = require("./services/updateCoursesAvailibity");
+const assignTeachersToCourses = require("./services/assignTeachersToCourses");
+
 // Calling the express module and defining server port
 const app = express();
 const port = 3000;
+
+// Middleware is responsible for parsing the request body as JSON.
+app.use(express.json());
 
 //Defining the database authentication
 const databaseConnect = mysql.createConnection({
@@ -14,6 +21,10 @@ const databaseConnect = mysql.createConnection({
   database: "college_db",
 });
 
+// End point functions
+updateCourseAvailibity(app, databaseConnect);
+assignTeachersToCourses(app, databaseConnect);
+
 //Create the connection to the database. If error, it would return a an error message.
 databaseConnect.connect((err) => {
   if (err) {
@@ -21,19 +32,6 @@ databaseConnect.connect((err) => {
     return;
   }
   console.log("Connected to MySQL database as ID " + databaseConnect.threadId);
-});
-
-// Create a connection to the server using app.get method.
-// Path was set as /api and response function as the callback
-app.get("/api", (req, response) => {
-  //Create a query to retrieve data from users table in the database
-  databaseConnect.query("SELECT * FROM users", (error, results, fields) => {
-    if (error) {
-      console.error("Error retrieving data: " + error.stack);
-      return;
-    }
-    return response.send(results);
-  });
 });
 
 //Check if server is listening to the connection
