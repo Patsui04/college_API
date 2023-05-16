@@ -5,6 +5,7 @@ const express = require("express");
 //Import the end points that would run the queries
 const updateCourseAvailibity = require("./services/updateCoursesAvailibity");
 const assignTeachersToCourses = require("./services/assignTeachersToCourses");
+const studentsBrowseCourses = require("./services/studentsBrowseCourses");
 
 // Calling the express module and defining server port
 const app = express();
@@ -24,6 +25,7 @@ const databaseConnect = mysql.createConnection({
 // End point functions
 updateCourseAvailibity(app, databaseConnect);
 assignTeachersToCourses(app, databaseConnect);
+studentsBrowseCourses(app, databaseConnect);
 
 //Create the connection to the database. If error, it would return a an error message.
 databaseConnect.connect((err) => {
