@@ -7,6 +7,7 @@ const updateCourseAvailibity = require("./services/updateCoursesAvailibity");
 const assignTeachersToCourses = require("./services/assignTeachersToCourses");
 const studentsBrowseCourses = require("./services/studentsBrowseCourses");
 const studentErol = require("./services/studentsEnrol");
+const teachersMark = require("./services/teachersMark");
 
 // Calling the express module and defining server port
 const app = express();
@@ -28,6 +29,7 @@ updateCourseAvailibity(app, databaseConnect);
 assignTeachersToCourses(app, databaseConnect);
 studentsBrowseCourses(app, databaseConnect);
 studentErol(app, databaseConnect);
+teachersMark(app, databaseConnect);
 
 //Create the connection to the database. If error, it would return a an error message.
 databaseConnect.connect((err) => {
