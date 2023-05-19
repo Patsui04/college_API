@@ -1,6 +1,7 @@
 //Export the end point
 module.exports = (app, databaseConnect) => {
   function checkingUserId(userId) {
+    // Admin need to be 2
     const query = `SELECT UserID FROM users WHERE RoleID = 2 AND UserID = ?;`;
 
     return new Promise((resolve, reject) => {

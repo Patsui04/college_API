@@ -1,19 +1,57 @@
 //Export the end point
 module.exports = (app, databaseConnect) => {
-  //Pass the app.put method from express and defining route
-  app.put("/courses/:courseId", (req, res) => {
-    const { courseId } = req.params;
-    const { isAvailable } = req.body;
-    // Run the query and return error or success messgae
+  function checkingUserId(userId) {
+    // Admin need to be 2
+    const query = `SELECT UserID FROM users WHERE RoleID = 1 AND UserID = ?;`;
+
+    return new Promise((resolve, reject) => {
+      databaseConnect.query(query, [userId], (err, results) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(results);
+      });
+    });
+  }
+
+  function updateCourse(isAvailable, courseId) {
     const query = `UPDATE courses SET isAvailable = ? WHERE CourseID = ?`;
 
-    databaseConnect.query(query, [isAvailable, courseId], (err) => {
-      if (err) {
-        console.error("Error updating column data:", err);
-        res.status(500).json({ error: "Failed to update column data" });
-        return;
-      }
-      return res.json({ message: "Column data updated successfully" });
+    return new Promise((resolve, reject) => {
+      databaseConnect.query(query, [isAvailable, courseId], (err, results) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(results);
+      });
     });
+  }
+
+  //Pass the app.put method from express and defining route
+  app.put("/courses/:courseId", async (req, res) => {
+    const { courseId } = req.params;
+    const { isAvailable, userId } = req.body;
+
+    // Try and Catch functions to run two queries
+    try {
+      // Validating if the userId is a professor
+      // Need to pass as a parameter the userId
+      const validateRole = await checkingUserId(userId);
+
+      // Checking if validateRole has data or not
+      if (!validateRole[0]) {
+        return res.json({
+          message: `You should be an admin to change course availability.`,
+        });
+      }
+
+      // Running the update query to change the student mark
+      await updateCourse(isAvailable, courseId);
+
+      res.json({ message: `Course ID ${courseId} has been updated.` });
+    } catch (error) {
+      // If any of these requests go wront, it will return an internal error
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   });
 };

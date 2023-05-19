@@ -1,11 +1,20 @@
 //Export the end point
 module.exports = (app, databaseConnect) => {
-  //Pass the app.put method from express
-  app.post("/students-enrol", (req, res) => {
-    const { courseId, userId } = req.body;
+  function checkingUserId(userId) {
+    // Student need to be 3
+    const query = `SELECT UserID FROM users WHERE RoleID = 3 AND UserID = ?;`;
 
-    // MySQL INSET command: The condition "NOT EXISTS" ensure the
-    // same student does select the same course more than once
+    return new Promise((resolve, reject) => {
+      databaseConnect.query(query, [userId], (err, results) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(results);
+      });
+    });
+  }
+
+  function assignStudentEnrol(courseId, userId) {
     const query = `
         INSERT INTO enrolments (CourseID, UserID)
         SELECT ?, ? FROM DUAL
@@ -15,27 +24,51 @@ module.exports = (app, databaseConnect) => {
           INNER JOIN courses ON (enrolments.CourseID = courses.CourseID)
           WHERE enrolments.CourseID = ? and enrolments.UserID = ?);
       `;
-    // Run the query and return error or success messgae
-    databaseConnect.query(
-      query,
-      [courseId, userId, courseId, userId],
-      function (err, result) {
-        if (err)
-          return res
-            .status(500)
-            .json({ error: "Courese enrolment was not successful." });
 
-        // Check weather the number of affecteRows is zero: i.e.,
-        // the INSERT has been ignored due since the same course has been taken by the same student
-        // Notify the same course has already been selected by the same student!
-        if (result.affectedRows == "0")
-          return res.json({ message: "Please, select a different course." });
+    return new Promise((resolve, reject) => {
+      databaseConnect.query(
+        query,
+        [courseId, userId, courseId, userId],
+        (err, results) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(results);
+        }
+      );
+    });
+  }
 
-        // Returning the final result with the updated records
+  //Pass the app.put method from express
+  app.post("/students-enrol", async (req, res) => {
+    const { courseId, userId } = req.body;
+
+    // Try and Catch functions to run two queries
+    try {
+      // Validating if the userId is a professor
+      // Need to pass as a parameter the userId
+      const validateRole = await checkingUserId(userId);
+
+      // Checking if validateRole has data or not
+      // If there is no data, that means that there is no professor
+      if (!validateRole[0]) {
         return res.json({
-          message: result.affectedRows + " record(s) updated successfully",
+          message: `You should be a student to enrol to courses.`,
         });
       }
-    );
+
+      // Running the update query to change the student mark
+      const resultQuery = await assignStudentEnrol(courseId, userId);
+
+      if (resultQuery.affectedRows == "0")
+        return res.json({ message: "You are already enroled to this course." });
+
+      return res.json({
+        message: resultQuery.affectedRows + " record(s) updated successfully",
+      });
+    } catch (error) {
+      // If any of these requests go wront, it will return an internal error
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   });
 };
