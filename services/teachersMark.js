@@ -2,6 +2,7 @@
 module.exports = (app, databaseConnect) => {
   function checkingUserId(userId) {
     // Query to selct UserID of Admins (Role 2)
+
     const query = `SELECT UserID FROM users WHERE RoleID = 2 AND UserID = ?;`;
 
     return new Promise((resolve, reject) => {
@@ -58,6 +59,7 @@ module.exports = (app, databaseConnect) => {
 
       // Checking if validateRole has data or not
       // If there is no data, that means that there is no professor
+
       if (!validateRole[0]) {
         return res.json({
           message: `You should be a professor to change marks.`,
@@ -66,8 +68,6 @@ module.exports = (app, databaseConnect) => {
 
       // Check if the CourseID belongs to TeacherID
       const getCourseID = await checkCourseTeacher(enrolmentId, userId);
-
-      console.log(getCourseID);
 
       if (!getCourseID[0]) {
         return res.json({
