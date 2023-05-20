@@ -1,7 +1,7 @@
 //Export the end point
 module.exports = (app, databaseConnect) => {
   function checkingUserId(userId) {
-    // Admin need to be 2
+    // Query to selct UserID of Admins (Role 2)
     const query = `SELECT UserID FROM users WHERE RoleID = 2 AND UserID = ?;`;
 
     return new Promise((resolve, reject) => {
@@ -14,6 +14,23 @@ module.exports = (app, databaseConnect) => {
     });
   }
 
+  //Query to give the teacherID based on the provided enrolmentID and userID
+  function checkCourseTeacher(enrolmentId, userId) {
+    const query = `SELECT TeacherID FROM courses 
+    JOIN enrolments ON courses.CourseID = enrolments.CourseID
+    WHERE enrolments.EnrolmentID = ? AND courses.TeacherID = ?;`;
+
+    return new Promise((resolve, reject) => {
+      databaseConnect.query(query, [enrolmentId, userId], (err, results) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(results);
+      });
+    });
+  }
+
+  //Query to update the Mark based on enrolmentID
   function changingStudentMark(mark, enrolmentId) {
     const query = `UPDATE enrolments SET Mark = ? WHERE EnrolmentID = ?`;
 
@@ -44,6 +61,17 @@ module.exports = (app, databaseConnect) => {
       if (!validateRole[0]) {
         return res.json({
           message: `You should be a professor to change marks.`,
+        });
+      }
+
+      // Check if the CourseID belongs to TeacherID
+      const getCourseID = await checkCourseTeacher(enrolmentId, userId);
+
+      console.log(getCourseID);
+
+      if (!getCourseID[0]) {
+        return res.json({
+          message: "The course and student is not assigned to you",
         });
       }
 

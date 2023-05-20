@@ -1,7 +1,7 @@
 //Export the end point
 module.exports = (app, databaseConnect) => {
   function checkingUserId(userId) {
-    // Admin need to be 2
+    // Query to select UserID where RoleID is 1 and userId input from postman
     const query = `SELECT UserID FROM users WHERE RoleID = 1 AND UserID = ?;`;
 
     return new Promise((resolve, reject) => {
@@ -15,6 +15,7 @@ module.exports = (app, databaseConnect) => {
   }
 
   function updateCourse(isAvailable, courseId) {
+    //Query to update the availability of course in the database. 1 = Available and 0 = to not available
     const query = `UPDATE courses SET isAvailable = ? WHERE CourseID = ?`;
 
     return new Promise((resolve, reject) => {
@@ -34,7 +35,7 @@ module.exports = (app, databaseConnect) => {
 
     // Try and Catch functions to run two queries
     try {
-      // Validating if the userId is a professor
+      // Validating if the userId is a teacher
       // Need to pass as a parameter the userId
       const validateRole = await checkingUserId(userId);
 
