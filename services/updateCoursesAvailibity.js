@@ -49,7 +49,7 @@ module.exports = (app, databaseConnect) => {
       // Running the update query to change the student mark
       await updateCourse(isAvailable, courseId);
 
-      res.json({ message: `Course ID ${courseId} has been updated.` });
+      return res.json({ message: `Course ID ${courseId} has been updated.` });
     } catch (error) {
       // If any of these requests go wront, it will return an internal error
       res.status(500).json({ error: "Internal Server Error" });

@@ -49,7 +49,7 @@ module.exports = (app, databaseConnect) => {
       // Running the update query to assign a professor to a course
       await assignTeachersToCourses(teacherId, courseId);
 
-      res.json({
+      return res.json({
         message: `Teacher with the ID: ${teacherId} was assigned to the Course ID: ${courseId} sucessfully.`,
       });
     } catch (error) {

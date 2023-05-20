@@ -54,7 +54,7 @@ module.exports = (app, databaseConnect) => {
       // Running the update query to change the student mark
       const resultQuery = await gettingAvailableCourses();
 
-      res.json(resultQuery);
+      return res.json(resultQuery);
     } catch (error) {
       // If any of these requests go wront, it will return an internal error
       res.status(500).json({ error: "Internal Server Error" });
